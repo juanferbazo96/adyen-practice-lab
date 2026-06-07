@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Adyen Practice Lab</title>
+  <meta name="robots" content="noindex,nofollow,noarchive" />
+  <meta name="description" content="Private Adyen test integration lab for implementation-engineer practice." />
+  <link rel="stylesheet" href="./adyen.css?v=20260607-valid-3ds-manual-1" />
+</head>
+<body>
+  <main class="adyen-shell">
+    <header class="workbar">
+      <a class="brand" href="./index.html" aria-label="Adyen Practice Lab">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span>
+          <strong>Adyen Practice Lab</strong>
+          <small>Disposable implementation-engineer training surface</small>
+        </span>
+      </a>
+      <div class="workbar-actions">
+        <button class="icon-button" type="button" id="seedDemo" title="Load sample test payment">↻</button>
+        <button class="icon-button" type="button" id="openDrawer" title="Open request drawer">☰</button>
+      </div>
+    </header>
+
+    <section class="notice" aria-label="Scope notice">
+      <strong>Adyen test only.</strong>
+      This standalone GitHub Pages lab is backed by the separate `adyen-practice-api` Lambda scaffold. It is not part of Verihop production, Portal, Backoffice, verification sessions, or live checkout. Do not paste live API keys, production merchant accounts, or real card data here.
+    </section>
+
+    <section class="settings-stack" aria-label="Practice settings">
+    <details class="panel developer-panel settings-panel" aria-label="Developer settings">
+      <summary class="panel-summary">
+        <span>
+          <span class="eyebrow">Settings</span>
+          <strong>Versions, config, and connectivity</strong>
+        </span>
+      </summary>
+      <div class="panel-heading">
+        <p class="eyebrow">Developer settings</p>
+        <h2>Versions, config, and connectivity</h2>
+      </div>
+      <div class="grid three">
+        <label>
+          Adyen Web version
+          <select id="adyenWebVersion" name="adyenWebVersion">
+            <option value="6.36.0" selected>6.36.0</option>
+            <option value="6.35.0">6.35.0</option>
+            <option value="6.34.0">6.34.0</option>
+          </select>
+        </label>
+        <label>
+          Adyen Web docs version
+          <select id="adyenDocsVersion" name="adyenDocsVersion">
+            <option value="6.36.0" selected>6.36.0</option>
+            <option value="6.35.0">6.35.0</option>
+            <option value="6.34.0">6.34.0</option>
+          </select>
+        </label>
+        <label>
+          Environment
+          <input id="adyenEnvironment" type="text" value="test" readonly />
+        </label>
+        <label>
+          Checkout API version
+          <select id="checkoutApiVersion" name="checkoutApiVersion">
+            <option value="v69">v69</option>
+            <option value="v70">v70</option>
+            <option value="v71" selected>v71</option>
+            <option value="v72">v72</option>
+          </select>
+        </label>
+      </div>
+      <div class="grid two">
+        <label>
+          Practice backend URL
+          <input id="backendUrl" name="backendUrl" type="url" value="https://7u12rfue70.execute-api.eu-north-1.amazonaws.com" autocomplete="off" />
+        </label>
+        <label>
+          Merchant account
+          <select id="merchantAccount" name="merchantAccount">
+            <option value="VerihopECOM" selected>VerihopECOM</option>
+            <option value="VerihopPOS">VerihopPOS</option>
+          </select>
+        </label>
+      </div>
+      <div class="diagnostic-actions">
+        <button class="secondary" type="button" id="loadConfig">Load backend config</button>
+        <button class="secondary" type="button" id="runDiagnostics">Run connectivity diagnostics</button>
+      </div>
+      <div class="version-grid" id="versionPanel"></div>
+      <div class="warning-list" id="warningList"></div>
+      <div class="doc-links" id="docLinks"></div>
+    </details>
+
+        <details class="panel settings-panel" id="paymentFields">
+          <summary class="panel-summary">
+            <span>
+              <span class="eyebrow">Settings</span>
+              <strong>Payment / transaction defaults</strong>
+            </span>
+          </summary>
+          <div class="panel-heading">
+            <p class="eyebrow">Payment</p>
+            <h2>Method and transaction</h2>
+          </div>
+          <div class="grid three">
+            <label class="manual-only">
+              Operation
+              <select id="operation" name="operation">
+                <option value="paymentMethods">Get payment methods</option>
+                <option value="payments" selected>Authorize payment</option>
+                <option value="sessions">Create checkout session</option>
+                <option value="details">Submit payment details</option>
+                <option value="capture">Capture authorized payment</option>
+                <option value="cancel">Cancel authorized payment</option>
+                <option value="refund">Refund captured payment</option>
+              </select>
+            </label>
+            <label>
+              Capture mode
+              <select id="captureDelayHours" name="captureDelayHours">
+                <option value="">Default account setting</option>
+                <option value="0">Immediate capture</option>
+                <option value="manual" selected>Manual capture</option>
+              </select>
+            </label>
+          </div>
+          <div class="grid four">
+            <label>
+              Amount
+              <input id="amount" name="amount" type="number" min="1" step="1" value="1299" />
+            </label>
+            <label>
+              Currency
+              <select id="currency" name="currency">
+                <option>EUR</option>
+                <option>USD</option>
+                <option>GBP</option>
+                <option>SEK</option>
+              </select>
+            </label>
+            <label>
+              Country
+              <select id="countryCode" name="countryCode">
+                <option>NL</option>
+                <option>US</option>
+                <option>GB</option>
+                <option>SE</option>
+                <option>DE</option>
+              </select>
+            </label>
+            <label>
+              Reference
+              <input id="reference" name="reference" type="text" value="adyen-practice-test-001" autocomplete="off" />
+            </label>
+          </div>
+          <div class="dynamic-fields" id="manualParameterFields"></div>
+        </details>
+
+        <details class="panel settings-panel" id="shopperFields">
+          <summary class="panel-summary">
+            <span>
+              <span class="eyebrow">Settings</span>
+              <strong>Shopper checkout context</strong>
+            </span>
+          </summary>
+          <div class="panel-heading">
+            <p class="eyebrow">Shopper</p>
+            <h2>Checkout context</h2>
+          </div>
+          <div class="grid three">
+            <label>
+              Shopper email
+              <input id="shopperEmail" name="shopperEmail" type="email" value="test-shopper@adyen-practice.example" autocomplete="off" />
+            </label>
+            <label>
+              Shopper reference
+              <input id="shopperReference" name="shopperReference" type="text" value="adyen-practice-shopper" autocomplete="off" />
+            </label>
+            <label>
+              Shopper interaction
+              <select id="shopperInteraction" name="shopperInteraction">
+                <option value="Ecommerce" selected>Ecommerce</option>
+                <option value="ContAuth">ContAuth</option>
+                <option value="Moto">MOTO</option>
+              </select>
+            </label>
+          </div>
+          <div class="grid two">
+            <label>
+              Return URL
+              <input id="returnUrl" name="returnUrl" type="url" value="https://juanferbazo96.github.io/adyen-practice-lab/adyen-lab/" autocomplete="off" />
+            </label>
+            <label>
+              Origin
+              <input id="origin" name="origin" type="url" value="https://juanferbazo96.github.io" autocomplete="off" />
+            </label>
+          </div>
+        </details>
+
+        <details class="panel settings-panel">
+          <summary class="panel-summary">
+            <span>
+              <span class="eyebrow">Settings</span>
+              <strong>Granular risk, recurring, and routing fields</strong>
+            </span>
+          </summary>
+          <div class="panel-heading">
+            <p class="eyebrow">Granular fields</p>
+            <h2>Risk, recurring, and routing</h2>
+          </div>
+          <div class="option-grid">
+            <label><input type="checkbox" id="threeDS2" name="threeDS2" checked /> Request 3DS2 data</label>
+            <label><input type="checkbox" id="storePaymentMethod" name="storePaymentMethod" /> Store payment method</label>
+            <label><input type="checkbox" id="installments" name="installments" /> Include installments</label>
+            <label><input type="checkbox" id="splitPayment" name="splitPayment" /> Include split instructions</label>
+            <label><input type="checkbox" id="lineItems" name="lineItems" checked /> Include line items</label>
+            <label><input type="checkbox" id="metadata" name="metadata" checked /> Include metadata</label>
+          </div>
+          <label>
+            Additional data JSON
+            <textarea id="additionalData" name="additionalData" spellcheck="false">{
+  "allow3DS2": "true",
+  "executeThreeD": "true"
+}</textarea>
+          </label>
+          <div class="warning-list" id="payloadWarnings"></div>
+        </details>
+    </section>
+
+    <div class="workspace">
+      <form class="composer" id="paymentForm">
+        <section class="panel">
+          <div class="panel-heading">
+            <p class="eyebrow">Flow</p>
+            <h1>Payment maker</h1>
+          </div>
+          <div class="segmented" role="group" aria-label="Execution mode">
+            <label><input type="radio" name="mode" value="backend" checked /> Send to practice Lambda</label>
+            <label><input type="radio" name="mode" value="mock" /> Mock trace</label>
+          </div>
+          <div class="segmented flow-toggle" role="group" aria-label="Integration flow">
+            <label><input type="radio" name="flow" value="sessions-dropin" checked /> Sessions Drop-in</label>
+            <label><input type="radio" name="flow" value="advanced-dropin" /> Advanced Drop-in</label>
+            <label><input type="radio" name="flow" value="manual-api" /> Manual API Lab</label>
+          </div>
+          <div class="mode-explainer" id="modeExplainer"></div>
+        </section>
+
+        <section class="panel" id="paymentMethodsPanel">
+          <div class="panel-heading">
+            <p class="eyebrow">Payment methods</p>
+            <h2>Available from /paymentMethods</h2>
+          </div>
+          <div class="method-actions">
+            <button class="secondary" type="button" id="loadPaymentMethods">Load payment methods</button>
+            <button class="secondary" type="button" id="selectAllPaymentMethods">Select all</button>
+          </div>
+          <div class="dropin-methods" id="paymentMethodToggles" aria-label="Fetched payment methods"></div>
+          <div class="warning-list" id="paymentMethodWarnings"></div>
+        </section>
+
+        <section class="panel dropin-preview" id="dropinPanel">
+          <div class="dropin-header">
+            <span class="dropin-lock" aria-hidden="true">⌁</span>
+            <div>
+              <strong>Adyen Web Drop-in practice</strong>
+              <small>Payment methods come from /paymentMethods and your toggles filter what the component receives.</small>
+            </div>
+          </div>
+          <div class="dropin-card">
+            <div class="dropin-mount" id="dropinMount">
+              <strong>Drop-in mount point</strong>
+              <span>Run Sessions or Advanced to mount the Adyen SDK here.</span>
+            </div>
+            <div class="dropin-result" id="dropinResult"></div>
+          </div>
+        </section>
+
+        <div class="action-row">
+          <button class="primary" type="submit">Run operation</button>
+          <button class="secondary" type="button" id="buildPayload">Preview payload</button>
+          <button class="secondary" type="button" id="simulateWebhook">Simulate webhook</button>
+          <button class="secondary" type="button" id="clearLog">Clear drawer</button>
+        </div>
+      </form>
+
+      <aside class="inspector" aria-label="Latest trace">
+        <div class="panel-heading">
+          <p class="eyebrow">Latest</p>
+          <h2>Request and reply</h2>
+        </div>
+        <div class="trace-blocks" id="latestTraceBlocks"></div>
+        <div class="timeline" id="timeline"></div>
+        <div class="trace-blocks diagnostics" id="diagnosticTraceBlocks"></div>
+      </aside>
+    </div>
+  </main>
+
+  <aside class="drawer" id="traceDrawer" aria-label="Request drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <div>
+        <p class="eyebrow">Trace drawer</p>
+        <h2>Requests, replies, webhooks</h2>
+      </div>
+      <button class="icon-button" type="button" id="closeDrawer" title="Close request drawer">×</button>
+    </div>
+    <div class="drawer-list" id="traceList"></div>
+  </aside>
+  <div class="scrim" id="scrim" hidden></div>
+
+  <script src="./adyen.js?v=20260607-valid-3ds-manual-1"></script>
+</body>
+</html>
